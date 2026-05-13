@@ -1,0 +1,333 @@
+{
+  "name": "YouTube automation with Drive",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "=0 12,16,20 * * 1-7"
+            }
+          ]
+        }
+      },
+      "id": "ef8f1ad3-c77c-4587-82db-0ae3fa2966cc",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -224,
+        -128
+      ],
+      "notes": "All days, 12 PM, 4 PM, 8 PM"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1CzW6whc2Ap59afwPFIQek-YY_u-GOYqUT694E29QTj0",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1CzW6whc2Ap59afwPFIQek-YY_u-GOYqUT694E29QTj0/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Status",
+              "lookupValue": "Pending"
+            }
+          ]
+        },
+        "combineFilters": "AND",
+        "options": {
+          "returnAllMatches": "returnFirstMatch"
+        }
+      },
+      "id": "bd49d307-57e6-4eaf-98b6-4c37d55c0b4a",
+      "name": "Read Pending Videos",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.2,
+      "position": [
+        0,
+        -128
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "eb7AYENeFexrn1R0",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "queryString": "={{ $json['File Name'] }}",
+        "filter": {
+          "folderId": {
+            "__rl": true,
+            "value": "1a035Y1HikQzc84D_PcDZdL0g9WP_-ThF",
+            "mode": "list",
+            "cachedResultName": "Funny Fails Clips [001 - 100]",
+            "cachedResultUrl": "https://drive.google.com/drive/folders/1a035Y1HikQzc84D_PcDZdL0g9WP_-ThF"
+          }
+        },
+        "options": {}
+      },
+      "id": "2297be8c-08d9-4080-a4ee-83c30188bb3b",
+      "name": "Get File from Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        224,
+        -128
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "5noeFirDVMKsHct8",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {
+          "binaryPropertyName": "data",
+          "fileName": "={{ $('Read Pending Videos').item.json['File Name'] }}"
+        }
+      },
+      "id": "445bde02-4f5c-427d-a334-81b2f6e20b95",
+      "name": "Download Video",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        448,
+        -128
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "5noeFirDVMKsHct8",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "video",
+        "operation": "upload",
+        "title": "={{ $('Read Pending Videos').item.json['Title'] }}",
+        "regionCode": "US",
+        "categoryId": "28",
+        "options": {
+          "description": "={{ $('Read Pending Videos').item.json['Description'] }}",
+          "embeddable": true,
+          "privacyStatus": "public",
+          "selfDeclaredMadeForKids": false
+        }
+      },
+      "id": "e600a59a-6e5a-4bd2-8f7b-a1e9b3c6861a",
+      "name": "Upload to YouTube",
+      "type": "n8n-nodes-base.youTube",
+      "typeVersion": 1,
+      "position": [
+        656,
+        -128
+      ],
+      "credentials": {
+        "youTubeOAuth2Api": {
+          "id": "EvV9nq6dj4FuKEA9",
+          "name": "YouTube account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1CzW6whc2Ap59afwPFIQek-YY_u-GOYqUT694E29QTj0",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1CzW6whc2Ap59afwPFIQek-YY_u-GOYqUT694E29QTj0/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $('Read Pending Videos').item.json.row_number }}",
+            "Status": "Updated"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "File Name",
+              "displayName": "File Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Drive File ID",
+              "displayName": "Drive File ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Description",
+              "displayName": "Description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Tags",
+              "displayName": "Tags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "8cf069d8-f98e-4b72-9c60-baf247a9584d",
+      "name": "Update Status to Uploaded",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.2,
+      "position": [
+        880,
+        -128
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "eb7AYENeFexrn1R0",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Read Pending Videos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Pending Videos": {
+      "main": [
+        [
+          {
+            "node": "Get File from Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get File from Drive": {
+      "main": [
+        [
+          {
+            "node": "Download Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Video": {
+      "main": [
+        [
+          {
+            "node": "Upload to YouTube",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload to YouTube": {
+      "main": [
+        [
+          {
+            "node": "Update Status to Uploaded",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "fc99d3b6-8ea2-46f3-aa27-7653dd54506a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e97652072ea1352f49ad873dba50f0dc666362fc03d14a0d2a2d84d19f1c0e66"
+  },
+  "id": "b92gNuKlemWDmVDh",
+  "tags": []
+}
