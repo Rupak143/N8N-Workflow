@@ -8,8 +8,7 @@
 4. Add video details to Google Sheets
 5. Activate workflow
 
-
-**#1. YouTube Automation with Google Drive using n8n**
+## 1. YouTube Automation with Google Drive using n8n
 
 This project automates uploading videos from Google Drive to YouTube using n8n.
 
